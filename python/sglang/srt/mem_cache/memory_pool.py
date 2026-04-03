@@ -486,11 +486,18 @@ class MambaPool:
         if ngroups_state_size % tp_world_size != 0:
             return []
 
-        conv_segment_dims = [
-            intermediate_size // tp_world_size,
-            ngroups_state_size // tp_world_size,
-            ngroups_state_size // tp_world_size,
-        ]
+        default_conv_segment_order = ("intermediate", "ssm", "ssm")
+        conv_segment_order = tuple(
+            getattr(shape, "conv_segment_order", default_conv_segment_order)
+        )
+        segment_dim_by_name = {
+            "intermediate": intermediate_size // tp_world_size,
+            "ssm": ngroups_state_size // tp_world_size,
+        }
+        try:
+            conv_segment_dims = [segment_dim_by_name[name] for name in conv_segment_order]
+        except KeyError:
+            return []
 
         state_tensors = []
         for field in vars(self.mamba_cache):

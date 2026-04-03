@@ -130,6 +130,7 @@ class Mamba2StateShape:
     conv: list[tuple[int, int]]
     temporal: tuple[int, int, int]
 
+    conv_segment_order: tuple[str, str, str] = ("intermediate", "ssm", "ssm")
     intermediate_size: int
     conv_dim: int
     ssm_state_size: int
@@ -148,6 +149,7 @@ class Mamba2StateShape:
         head_dim: int,
         state_size: int,
         conv_kernel: int,
+        conv_segment_order: tuple[str, str, str] = ("intermediate", "ssm", "ssm"),
     ) -> "Mamba2StateShape":
         # if n_groups is not divisible by world_size, need to extend the shards
         # to ensure all groups needed by a head is sharded along with it
@@ -167,6 +169,7 @@ class Mamba2StateShape:
         return Mamba2StateShape(
             conv=[conv_state_shape],
             temporal=temporal_state_shape,
+            conv_segment_order=conv_segment_order,
             intermediate_size=intermediate_size,
             conv_dim=conv_dim,
             ssm_state_size=state_size,
